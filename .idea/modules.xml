@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/QQSpider.iml" filepath="$PROJECT_DIR$/QQSpider.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SocialCrawler.iml" filepath="$PROJECT_DIR$/SocialCrawler.iml" />
     </modules>
   </component>
 </project>
-

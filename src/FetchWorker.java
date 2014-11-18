@@ -1,3 +1,4 @@
+import core.crawler.FetchRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -5,8 +6,8 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import view.MainForm;
 
-import java.util.PriorityQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**

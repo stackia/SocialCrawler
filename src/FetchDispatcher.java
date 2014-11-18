@@ -1,9 +1,9 @@
+import core.crawler.FetchRequest;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-import java.util.PriorityQueue;
 import java.util.Vector;
 import java.util.concurrent.PriorityBlockingQueue;
 

@@ -1,3 +1,5 @@
+package view;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -9,7 +11,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.StringReader;
@@ -18,22 +19,21 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * QQSpider
+ * Project: QQSpider
+ * Package: view
  * Created by Stackia <jsq2627@gmail.com> on 10/30/14.
  */
-public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedListener, FetchDispatcher.OnDispatcherStateChangedListener {
+public class MainForm extends JFrame {
 
-    private final static int WORKER_NUM = 40;
-    public static String vUIN;
-    public static String vSKey;
+    /* UI Components */
     private JPanel rootPanel;
-    private JTextField vUINTextField;
-    private JTextField vSKeyTextField;
-    private JButton editInputButton;
+    private JTextField uinTextField;
+    private JTextField skeyTextField;
     private JButton runButton;
-    private JTable queueTable;
-    private JSpinner depthSpinner;
+    private JTable userTable;
     private JLabel statusLabel;
+    private JButton stopButton;
+
     private Vector<QQUser> userVector = new Vector<QQUser>();
     private FetchDispatcher fetchDispatcher = new FetchDispatcher(WORKER_NUM);
     private QueueTableModel queueTableModel = new QueueTableModel();
@@ -45,14 +45,14 @@ public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedLis
         /* TODO: Remove test data */
         vUIN = "123395879";
         vSKey = "@PKX8VDZMC";
-        vUINTextField.setText(vUIN);
-        vSKeyTextField.setText(vSKey);
+        uinTextField.setText(vUIN);
+        skeyTextField.setText(vSKey);
         QQUser testUser = new QQUser();
         testUser.uin = vUIN;
         testUser.depth = 0;
         addUser(testUser);
 
-        queueTable.setModel(queueTableModel);
+        userTable.setModel(queueTableModel);
         depthSpinner.setModel(depthSpinnerModel);
         fetchDispatcher.setOnDispatcherStateChangedListener(this);
 
@@ -62,45 +62,45 @@ public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedLis
                 runButton.setText("...");
                 runButton.setEnabled(false);
                 switch (fetchDispatcher.getState()) {
-                    case Paused:
+                    case FetchDispatcher.State.Paused:
                         fetchDispatcher.start();
                         break;
-                    case Started:
+                    case FetchDispatcher.State.Started:
                         fetchDispatcher.pause();
                         break;
                 }
             }
         });
-        vUINTextField.getDocument().addDocumentListener(new DocumentListener() {
+        uinTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                vUIN = vUINTextField.getText();
+                vUIN = uinTextField.getText();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                vUIN = vUINTextField.getText();
+                vUIN = uinTextField.getText();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                vUIN = vUINTextField.getText();
+                vUIN = uinTextField.getText();
             }
         });
-        vSKeyTextField.getDocument().addDocumentListener(new DocumentListener() {
+        skeyTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                vSKey = vSKeyTextField.getText();
+                vSKey = skeyTextField.getText();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                vSKey = vSKeyTextField.getText();
+                vSKey = skeyTextField.getText();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                vSKey = vSKeyTextField.getText();
+                vSKey = skeyTextField.getText();
             }
         });
     }
@@ -130,8 +130,8 @@ public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedLis
                 fetchDispatcher.addRequest(new FetchRequest(user, FetchRequest.Type.RecentVisitors, this));
             }
             fetchDispatcher.addRequest(new FetchRequest(user, FetchRequest.Type.MessageBoard, this));
-//            fetchDispatcher.addRequest(new FetchRequest(user, FetchRequest.Type.FullProfiles, this));
-//            fetchDispatcher.addRequest(new FetchRequest(user, FetchRequest.Type.SimpleProfiles, this));
+//            fetchDispatcher.addRequest(new core.crawler.FetchRequest(user, core.crawler.FetchRequest.Type.FullProfiles, this));
+//            fetchDispatcher.addRequest(new core.crawler.FetchRequest(user, core.crawler.FetchRequest.Type.SimpleProfiles, this));
         }
     }
 
@@ -146,7 +146,7 @@ public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedLis
         QQUser user = request.getUser();
         int nextDepth = user.depth + 1;
         switch (request.getType()) {
-            case Friends:
+            case FetchRequest.Type.Friends:
                 user.friends = new Vector<QQUser>();
                 try {
                     SAXBuilder saxBuilder = new SAXBuilder();
@@ -167,7 +167,7 @@ public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedLis
                     addUsers(user.relatedUsers);
                 }
                 break;
-            case RecentVisitors:
+            case FetchRequest.Type.RecentVisitors:
                 user.recentVisitors = new Vector<QQUser>();
                 try {
                     JsonElement root = new JsonParser().parse(user.originalRecentVisitorsData);
@@ -184,7 +184,7 @@ public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedLis
                     addUsers(user.relatedUsers);
                 }
                 break;
-            case MessageBoard:
+            case FetchRequest.Type.MessageBoard:
                 user.messageBoardUsers = new Vector<QQUser>();
                 try {
                     JsonElement root = new JsonParser().parse(user.originalMessageBoardData);
@@ -201,10 +201,10 @@ public class MainForm extends JFrame implements FetchWorker.OnRequestFinishedLis
                     addUsers(user.relatedUsers);
                 }
                 break;
-            case FullProfiles:
+            case FetchRequest.Type.FullProfiles:
 
                 break;
-            case SimpleProfiles:
+            case FetchRequest.Type.SimpleProfiles:
 
                 break;
         }
