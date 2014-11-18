@@ -1,9 +1,9 @@
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 
-*.iml
+#*.iml
 
 ## Directory-based project format:
-.idea/
+#.idea/
 # if you remove the above rule, at least ignore the following:
 
 # User-specific stuff:
@@ -26,8 +26,8 @@
 # .idea/mongoSettings.xml
 
 ## File-based project format:
-*.ipr
-*.iws
+#*.ipr
+#*.iws
 
 ## Plugin-specific files:
 
@@ -35,12 +35,12 @@
 out/
 
 # mpeltonen/sbt-idea plugin
-.idea_modules/
+#.idea_modules/
 
 # JIRA plugin
-atlassian-ide-plugin.xml
+#atlassian-ide-plugin.xml
 
 # Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
+#com_crashlytics_export_strings.xml
+#crashlytics.properties
+#crashlytics-build.properties
