@@ -9,8 +9,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
-import java.util.Random;
-
 /**
  * Project: SocialCrawler
  * Package: core.crawler
@@ -19,39 +17,45 @@ import java.util.Random;
 public class FetcherPool {
 
     /**
-     * The maximum number of fetchers.
+     * Unique ID for this FetcherPool object.
      */
-    private int maxFetcherNum;
-
+    private static int seq = 0;
     /**
-     * A thread group holding all fetcher threads.
+     * Singleton of a general-use FetcherPool.
      */
-    private ThreadGroup fetcherThreadGroup = new ThreadGroup("FetcherThreadGroup-" + seq);
-
+    private static FetcherPool defaultFetcherPool;
+    /**
+     * Used by FetcherThread to notify the pool there is an available fetcher.
+     */
+    private final Object freeFetcherMonitor = new Object();
     /**
      * Used to controlling HTTP connection number.
      */
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-
+    /**
+     * The maximum number of fetchers.
+     */
+    private int maxFetcherNum;
+    /**
+     * A thread group holding all fetcher threads.
+     */
+    private ThreadGroup fetcherThreadGroup = new ThreadGroup("FetcherThreadGroup-" + seq);
     /**
      * The common http client for all fetchers.
      */
     private CloseableHttpClient httpClient;
 
     /**
-     * Used by FetcherThread to notify the pool there is an available fetcher.
+     * Create a fetcher pool.
+     *
+     * @param maxFetcherNum The maximum number of fetcher.
      */
-    private final Object freeFetcherMonitor = new Object();
-
-    /**
-     * Unique ID for this FetcherPool object.
-     */
-    private static int seq = 0;
-
-    /**
-     * Singleton of a general-use FetcherPool.
-     */
-    private static FetcherPool defaultFetcherPool;
+    public FetcherPool(int maxFetcherNum) {
+        ++seq;
+        setMaxFetcherNum(maxFetcherNum);
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(1500).build();
+        httpClient = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
+    }
 
     /**
      * Return a singleton of FetcherPool for using in most situations.
@@ -65,16 +69,9 @@ public class FetcherPool {
         return defaultFetcherPool;
     }
 
-    public FetcherPool(int maxFetcherNum) {
-        ++seq;
-        setMaxFetcherNum(maxFetcherNum);
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(1500).build();
-        httpClient = HttpClients.custom().setConnectionManager(connectionManager).setDefaultRequestConfig(requestConfig).build();
-    }
-
     /**
      * Execute a FetchRequest on a free fetcher.
-     *
+     * <p/>
      * If there isn't any available fetcher, it will try to create a new fetcher, or wait until there is one if maxFetcherNum is reached.
      *
      * @param fetchRequest FetchRequest to be executed.
@@ -127,6 +124,7 @@ public class FetcherPool {
 
     /**
      * Set the maximum number of fetchers.
+     *
      * @param maxFetcherNum The maximum number.
      */
     public void setMaxFetcherNum(int maxFetcherNum) {
@@ -166,9 +164,9 @@ public class FetcherPool {
                 try {
                     CloseableHttpResponse response = httpClient.execute(fetchRequest.getHttpRequest(), httpContext);
                     responseString = new BasicResponseHandler().handleResponse(response);
-                    fetchRequest.setStatus(FetchRequest.Status.Successful);
+                    fetchRequest.setState(FetchRequest.State.Successful);
                 } catch (Exception e) {
-                    fetchRequest.setStatus(FetchRequest.Status.Failed);
+                    fetchRequest.setState(FetchRequest.State.Failed);
                 }
                 fetchRequest.getSender().onFetchRequestPostExecution(fetchRequest, responseString);
                 fetchRequest = null;
@@ -182,9 +180,18 @@ public class FetcherPool {
         public void abortFetchRequest() {
             if (fetchRequest != null) {
                 fetchRequest.getHttpRequest().abort();
-                fetchRequest.setStatus(FetchRequest.Status.Failed);
+                fetchRequest.setState(FetchRequest.State.Failed);
                 fetchRequest = null;
             }
+        }
+
+        /**
+         * Get the current FetchRequest.
+         *
+         * @return Current FetchRequest.
+         */
+        public FetchRequest getFetchRequest() {
+            return fetchRequest;
         }
 
         /**
@@ -195,15 +202,6 @@ public class FetcherPool {
         public void setFetchRequest(FetchRequest fetchRequest) {
             this.fetchRequest = fetchRequest;
             interrupt();
-        }
-
-        /**
-         * Get the current FetchRequest.
-         *
-         * @return Current FetchRequest.
-         */
-        public FetchRequest getFetchRequest() {
-            return fetchRequest;
         }
 
         /**

@@ -1,3 +1,5 @@
+package core.model;
+
 import java.util.Vector;
 
 /**

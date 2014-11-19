@@ -4,8 +4,8 @@
     <data-source name="MySQL - @localhost" uuid="d1a97dea-f262-43f7-aa24-a5ecd25926c1">
       <secret-storage>master_key</secret-storage>
       <user-name>root</user-name>
-      <schema-pattern>test.*</schema-pattern>
-      <default-schemas>test.*</default-schemas>
+      <schema-pattern>social_spider.*</schema-pattern>
+      <default-schemas>social_spider.* test.*</default-schemas>
     </data-source>
   </component>
 </project>
