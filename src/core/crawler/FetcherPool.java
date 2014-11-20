@@ -9,6 +9,8 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
+import javax.xml.transform.TransformerFactory;
+
 /**
  * Project: SocialCrawler
  * Package: core.crawler
@@ -154,10 +156,10 @@ public class FetcherPool {
                     try {
                         Thread.sleep(1000);
                         ++cycleTick;
-                        continue;
                     } catch (InterruptedException e) { // Interrupted because of a new FetchRequest
                         Thread.interrupted(); // Clear interrupted status
                     }
+                    continue;
                 }
                 cycleTick = 0;
                 String responseString = null;
@@ -170,7 +172,9 @@ public class FetcherPool {
                 }
                 fetchRequest.getSender().onFetchRequestPostExecution(fetchRequest, responseString);
                 fetchRequest = null;
-                freeFetcherMonitor.notify(); // Notify the pool I am free
+                synchronized (freeFetcherMonitor) {
+                    freeFetcherMonitor.notify(); // Notify the pool I am free
+                }
             }
         }
 

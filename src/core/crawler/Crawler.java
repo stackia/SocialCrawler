@@ -103,7 +103,7 @@ abstract class Crawler<T> {
      * @param fetchRequest FetchRequest that has been executed.
      * @param content      Fetch result (HTTP Body string), or null if request failed.
      */
-    public void onFetchRequestPostExecution(FetchRequest fetchRequest, String content) {
+    protected void onFetchRequestPostExecution(FetchRequest fetchRequest, String content) {
         // Remove from pendingFetchRequests
         pendingFetchRequests.remove(fetchRequest);
 
@@ -122,7 +122,9 @@ abstract class Crawler<T> {
     public void start() {
         switch (state) {
             case PAUSED:
-                pauseMonitor.notify();
+                synchronized (pauseMonitor) {
+                    pauseMonitor.notify();
+                }
                 break;
 
             case STOPPED:
@@ -148,7 +150,9 @@ abstract class Crawler<T> {
 
                                             // Wait until started again
                                             state = Crawler.State.PAUSED;
-                                            pauseSuccessMonitor.notify();
+                                            synchronized (pauseSuccessMonitor) {
+                                                pauseSuccessMonitor.notify();
+                                            }
                                             try {
                                                 pauseMonitor.wait();
                                             } catch (InterruptedException e) {
@@ -200,12 +204,15 @@ abstract class Crawler<T> {
 
                                     // Read one user from UserStorage, generate a group of FetchRequest, send the first one to FetcherPool, buffer the others.
                                     T user = userStorage.find(userOffset);
-                                    ++userOffset;
                                     if (user == null) { // There is no more user
-                                        signal = Signal.STOP; // Stop the crawler
+                                        Thread.sleep(2000); // Wait for more users
                                         continue;
                                     }
+                                    ++userOffset;
                                     List<FetchRequest> fetchRequests = generateFetchRequest(user);
+                                    if (fetchRequests.isEmpty()) {
+                                        continue;
+                                    }
                                     FetchRequest fetchRequest = fetchRequests.get(0);
                                     fetcherPool.executeRequest(fetchRequest);
                                     pendingFetchRequests.add(fetchRequest); // Send the first one
@@ -247,6 +254,10 @@ abstract class Crawler<T> {
     public void stop() throws InterruptedException {
         signal = Signal.STOP; // Send stop signal to workingThread
         workingThread.join();
+    }
+
+    protected UserStorage<T> getUserStorage() {
+        return userStorage;
     }
 
     /**

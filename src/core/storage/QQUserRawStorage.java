@@ -2,6 +2,7 @@ package core.storage;
 
 import core.model.QQUserRaw;
 
+import javax.management.relation.RelationService;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,7 +40,9 @@ public class QQUserRawStorage implements UserStorage<QQUserRaw> {
             statement.setString(5, newUser.getRecentVisitors());
             statement.setString(6, newUser.getRecentVisitorsDetail());
             statement.setString(7, newUser.getFriends());
-            return statement.executeUpdate() == 1;
+            boolean result = statement.executeUpdate() == 1;
+            statement.close();
+            return result;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -51,12 +54,18 @@ public class QQUserRawStorage implements UserStorage<QQUserRaw> {
         return insert(newUser);
     }
 
+    public synchronized boolean insertIfNotExisted(long uin) {
+        return !exists(uin) && insert(uin);
+    }
+
     @Override
     public boolean delete(QQUserRaw userToDelete) {
         try {
             PreparedStatement statement = dbConnection.prepareStatement("DELETE FROM social_spider.qq_users_raw WHERE uin = ?;");
             statement.setLong(1, userToDelete.getUin());
-            return statement.executeUpdate() == 1;
+            boolean result = statement.executeUpdate() == 1;
+            statement.close();
+            return result;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -71,8 +80,8 @@ public class QQUserRawStorage implements UserStorage<QQUserRaw> {
     @Override
     public QQUserRaw find(long offset) {
         try {
-            PreparedStatement statement = dbConnection.prepareStatement("SELECT * FROM social_spider.qq_users_raw LIMIT 1 OFFSET ?");
-            statement.setLong(1, offset);
+            PreparedStatement statement = dbConnection.prepareStatement("SELECT * FROM social_spider.qq_users_raw WHERE id = ?");
+            statement.setLong(1, offset + 1);
             ResultSet resultSet = statement.executeQuery();
             if (!resultSet.first()) {
                 return null;
@@ -84,6 +93,8 @@ public class QQUserRawStorage implements UserStorage<QQUserRaw> {
             user.setRecentVisitors(resultSet.getString("recent_visitors"));
             user.setRecentVisitorsDetail(resultSet.getString("recent_visitors_detail"));
             user.setFriends(resultSet.getString("friends"));
+            statement.close();
+            resultSet.close();
             return user;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -97,7 +108,10 @@ public class QQUserRawStorage implements UserStorage<QQUserRaw> {
             PreparedStatement statement = dbConnection.prepareStatement("SELECT uin FROM social_spider.qq_users_raw WHERE uin = ?;");
             statement.setLong(1, user.getUin());
             ResultSet resultSet = statement.executeQuery();
-            return resultSet.first();
+            boolean result = resultSet.first();
+            statement.close();
+            resultSet.close();
+            return result;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -120,7 +134,9 @@ public class QQUserRawStorage implements UserStorage<QQUserRaw> {
             statement.setString(5, user.getRecentVisitorsDetail());
             statement.setString(6, user.getFriends());
             statement.setLong(7, user.getUin());
-            return statement.executeUpdate() == 1;
+            boolean result = statement.executeUpdate() == 1;
+            statement.close();
+            return  result;
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -17,7 +17,7 @@ class FetchRequest<T> {
     /**
      * The crawler that sent this FetchRequest.
      */
-    private Crawler sender;
+    private Crawler<T> sender;
 
     /**
      *  State of this FetchRequest.
@@ -35,7 +35,7 @@ class FetchRequest<T> {
      * @param sender The crawler that will send this fetch request.
      * @param relatedModel A data model associated with this fetch request.
      */
-    public FetchRequest(Crawler sender, T relatedModel) {
+    public FetchRequest(Crawler<T> sender, T relatedModel) {
         this.sender = sender;
         this.relatedModel = relatedModel;
     }
@@ -47,7 +47,7 @@ class FetchRequest<T> {
      * @param sender The crawler that will send this fetch request.
      * @param relatedModel A data model associated with this fetch request.
      */
-    public FetchRequest(HttpUriRequest httpRequest, Crawler sender, T relatedModel) {
+    public FetchRequest(HttpUriRequest httpRequest, Crawler<T> sender, T relatedModel) {
         this.httpRequest = httpRequest;
         this.sender = sender;
         this.relatedModel = relatedModel;
@@ -77,7 +77,7 @@ class FetchRequest<T> {
         this.httpRequest = httpRequest;
     }
 
-    public Crawler getSender() {
+    public Crawler<T> getSender() {
         return sender;
     }
 
