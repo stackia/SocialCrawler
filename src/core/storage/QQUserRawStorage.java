@@ -2,7 +2,6 @@ package core.storage;
 
 import core.model.QQUserRaw;
 
-import javax.management.relation.RelationService;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

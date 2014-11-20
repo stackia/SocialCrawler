@@ -3,7 +3,6 @@ package core.crawler;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import core.model.QQUser;
 import core.model.QQUserRaw;
 import core.storage.QQUserRawStorage;
 import org.apache.http.HttpRequest;
@@ -15,7 +14,6 @@ import org.jdom2.input.SAXBuilder;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.LongSummaryStatistics;
 
 /**
  * Project: SocialCrawler

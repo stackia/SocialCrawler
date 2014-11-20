@@ -9,8 +9,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
-import javax.xml.transform.TransformerFactory;
-
 /**
  * Project: SocialCrawler
  * Package: core.crawler
@@ -22,26 +20,32 @@ public class FetcherPool {
      * Unique ID for this FetcherPool object.
      */
     private static int seq = 0;
+
     /**
      * Singleton of a general-use FetcherPool.
      */
     private static FetcherPool defaultFetcherPool;
+
     /**
      * Used by FetcherThread to notify the pool there is an available fetcher.
      */
     private final Object freeFetcherMonitor = new Object();
+
     /**
      * Used to controlling HTTP connection number.
      */
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+
     /**
      * The maximum number of fetchers.
      */
     private int maxFetcherNum;
+
     /**
      * A thread group holding all fetcher threads.
      */
     private ThreadGroup fetcherThreadGroup = new ThreadGroup("FetcherThreadGroup-" + seq);
+
     /**
      * The common http client for all fetchers.
      */

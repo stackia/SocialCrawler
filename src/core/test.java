@@ -3,7 +3,6 @@ package core;
 import core.crawler.FetcherPool;
 import core.crawler.QQSpaceCrawler;
 import core.storage.QQUserRawStorage;
-import sun.awt.image.URLImageSource;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
